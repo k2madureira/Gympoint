@@ -17,7 +17,7 @@ class StudentController {
     });
 
     if (!(await schema.isValid(req.body))) {
-      return res.status(400).json({ error: 'validation fail.' });
+      return res.status(400).json({ error: 'incorrect data' });
     }
 
     const studentExists = await Student.findOne({

@@ -39,6 +39,7 @@ class PlanController {
     });
   }
 
+  // eslint-disable-next-line consistent-return
   async update(req, res) {
     const schema = Yup.object().shape({
       title: Yup.string().required(),
