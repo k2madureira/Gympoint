@@ -20,6 +20,8 @@ routes.delete('/plans/:id', PlanController.delete);
 
 routes.get('/registration', RegistrationController.index);
 routes.post('/registration', RegistrationController.store);
+routes.put('/registration/:id', RegistrationController.update);
+routes.delete('/registration/:id', RegistrationController.delete);
 
 routes.post('/student', StudentController.store);
 routes.post('/student/:id', StudentController.update);
