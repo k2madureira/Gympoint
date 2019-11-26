@@ -3,6 +3,7 @@ import { Router } from 'express';
 import StudentController from './app/controllers/StudentController';
 import SessionController from './app/controllers/SessionController';
 import RegistrationController from './app/controllers/RegistrationController';
+import CheckinController from './app/controllers/CheckinController';
 import authMiddleware from './app/middlewares/auth';
 
 const PlanController = require('./app/controllers/PlanController');
@@ -25,5 +26,7 @@ routes.delete('/registration/:id', RegistrationController.delete);
 
 routes.post('/student', StudentController.store);
 routes.post('/student/:id', StudentController.update);
+
+routes.get('/checkin', CheckinController.index);
 
 export default routes;

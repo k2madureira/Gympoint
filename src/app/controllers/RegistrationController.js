@@ -1,5 +1,6 @@
 import * as Yup from 'yup';
-import { addMonths, parseISO } from 'date-fns';
+import { addMonths, parseISO, format } from 'date-fns';
+import pt from 'date-fns/locale/pt';
 import Plan from '../models/Plan';
 import Student from '../models/Student';
 import Registration from '../models/Registration';
@@ -89,11 +90,19 @@ class RegistrationController {
       ],
     });
 
-    /* await Mail.sendMail({
+    await Mail.sendMail({
       to: `${findRegistrate.student.name} <${findRegistrate.student.email}>`,
-      subject: 'Update',
-      text: 'Update registration !!',
-    }); */
+      subject: 'Matrícula Gympoint',
+      template: 'welcomeStudent',
+      context: {
+        student: findRegistrate.student.name,
+        plan: findRegistrate.plan.title,
+        price: findRegistrate.price,
+        date: format(findRegistrate.end_date, "'dia' dd 'de' MMMM 'de ' yyyy", {
+          locale: pt,
+        }),
+      },
+    });
     return res.json({
       message: 'Successeful Registration!',
       Registrate: findRegistrate,
