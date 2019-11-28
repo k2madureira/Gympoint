@@ -12,6 +12,10 @@ const routes = new Router();
 
 routes.post('/sessions', SessionController.store);
 
+routes.get('/checkin', CheckinController.index);
+routes.get('/student/:id/checkin', CheckinController.store);
+routes.get('/student/:id/checkin/list', CheckinController.list);
+
 routes.use(authMiddleware);
 
 routes.get('/plans', PlanController.index);
@@ -26,7 +30,5 @@ routes.delete('/registration/:id', RegistrationController.delete);
 
 routes.post('/student', StudentController.store);
 routes.post('/student/:id', StudentController.update);
-
-routes.get('/checkin', CheckinController.index);
 
 export default routes;

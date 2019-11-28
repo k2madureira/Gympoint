@@ -94,7 +94,7 @@ class PlanController {
 
     await plan.destroy();
 
-    return res.json({ status: 'Plan deleted.' })
+    return res.json({ status: 'Plan deleted.' });
   }
 }
 
