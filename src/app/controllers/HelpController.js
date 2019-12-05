@@ -1,12 +1,15 @@
-import * as Yup from 'yup';
-import { parseISO, format } from 'date-fns';
-import Help from '../schemas/Help';
+/* mport * as Yup from 'yup'; */
+import { format } from 'date-fns';
+import pt from 'date-fns/locale/pt';
+
+import Help from '../models/HelpOrder';
 import Student from '../models/Student';
+import Mail from '../../lib/Mail';
 
 class HelpController {
   async index(__, res) {
-    const find = await Help.find({
-      answer: null,
+    const find = await Help.findAll({
+      where: { answer: null },
     });
 
     return res.json({ find });
@@ -14,8 +17,15 @@ class HelpController {
 
   async findId(req, res) {
     const findStudent = await Student.findByPk(req.params.id);
-    const findHelpOrders = await Help.find({
-      student_id: req.params.id,
+    const findHelpOrders = await Help.findAll({
+      where: { student_id: req.params.id },
+      include: [
+        {
+          model: Student,
+          as: 'student',
+          attributes: ['name', 'email'],
+        },
+      ],
     });
 
     let error = '';
@@ -28,11 +38,9 @@ class HelpController {
     if (error) {
       return res.status(400).json({ error });
     }
+
     return res.json({
-      questions: findHelpOrders,
-      /* student: findStudent.name,
-      answer: findHelpOrders.question,
-      question_date: findHelpOrders.createdAt, */ // format(parseISO(find.createdAt), 'dd-mm-yyyy'),
+      question: findHelpOrders,
     });
   }
 
@@ -54,19 +62,48 @@ class HelpController {
     if (error) {
       return res.status(400).json({ error });
     }
-
-    await Help.create({
+    const helporder = await Help.create({
       student_id: id,
-      question: `${findStudent.name} : ${question}`,
-      answer: null,
-      answer_at: null,
+      question,
     });
 
     return res.json({
-      question,
-      id,
-      findStudent,
+      helporder,
     });
+  }
+
+  async answer(req, res) {
+    const { id } = req.params;
+    const { answer } = req.body;
+
+    const findQuestion = await Help.findByPk(id);
+    if (!findQuestion) {
+      return res.status(400).json({ error: "This question don't exist ." });
+    }
+    const createAnswer = await findQuestion.update({
+      answer,
+      answerAt: new Date(),
+    });
+
+    const findStudent = await Student.findOne({
+      where: { id: createAnswer.student_id },
+    });
+
+    await Mail.sendMail({
+      to: `${findStudent.name} <${findStudent.email}>`,
+      subject: 'Answer Gympoint',
+      template: 'helpOrder',
+      context: {
+        student: findStudent.name,
+        question: createAnswer.question,
+        answer: createAnswer.answer,
+        date: format(createAnswer.answerAt, "'dia' dd 'de' MMMM 'de ' yyyy", {
+          locale: pt,
+        }),
+      },
+    });
+
+    return res.json({ createAnswer });
   }
 }
 
