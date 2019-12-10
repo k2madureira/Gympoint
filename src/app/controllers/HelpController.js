@@ -1,18 +1,20 @@
 /* mport * as Yup from 'yup'; */
-import { format } from 'date-fns';
-import pt from 'date-fns/locale/pt';
 
 import Help from '../models/HelpOrder';
 import Student from '../models/Student';
-import Mail from '../../lib/Mail';
+import Queue from '../../lib/Queue';
+import OrderMail from '../jobs/OrderMail';
 
 class HelpController {
   async index(__, res) {
     const find = await Help.findAll({
       where: { answer: null },
+      attributes: ['question', 'createdAt'],
     });
 
-    return res.json({ find });
+    return res.json({
+      helps: find,
+    });
   }
 
   async findId(req, res) {
@@ -89,20 +91,10 @@ class HelpController {
       where: { id: createAnswer.student_id },
     });
 
-    await Mail.sendMail({
-      to: `${findStudent.name} <${findStudent.email}>`,
-      subject: 'Answer Gympoint',
-      template: 'helpOrder',
-      context: {
-        student: findStudent.name,
-        question: createAnswer.question,
-        answer: createAnswer.answer,
-        date: format(createAnswer.answerAt, "'dia' dd 'de' MMMM 'de ' yyyy", {
-          locale: pt,
-        }),
-      },
+    await Queue.add(OrderMail.key, {
+      findStudent,
+      createAnswer,
     });
-
     return res.json({ createAnswer });
   }
 }
